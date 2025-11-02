@@ -1,12 +1,12 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Cheats for My Roblox Game",
-   LoadingTitle = "Loading Cheats Menu",
-   LoadingSubtitle = "For Roblox Studio Game",
+   Name = "SkillHelper | made by vladpcs13",
+   LoadingTitle = "Loading...",
+   LoadingSubtitle = "by vladpcs13",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "MyGameCheats",
+      FolderName = "China",
       FileName = "config"
    },
    KeySystem = false
@@ -80,7 +80,7 @@ end
 local AimbotConnection
 
 local AimbotToggle = MainTab:CreateToggle({
-   Name = "Enable Aimbot",
+   Name = "Aimbot",
    CurrentValue = false,
    Flag = "AimbotToggle",
    Callback = function(Value)
@@ -105,7 +105,7 @@ local AimbotToggle = MainTab:CreateToggle({
 })
 
 MainTab:CreateSlider({
-   Name = "Aimbot Sensitivity",
+   Name = "Smoothness",
    Range = {0.1, 25},
    Increment = 0.1,
    Suffix = "x",
@@ -117,7 +117,7 @@ MainTab:CreateSlider({
 })
 
 MainTab:CreateSlider({
-   Name = "Aimbot FOV Radius",
+   Name = "FOV",
    Range = {50, 500},
    Increment = 10,
    Suffix = "px",
@@ -129,7 +129,7 @@ MainTab:CreateSlider({
    end,
 })
 
-MainTab:CreateSection("WallHack Controls")
+MainTab:CreateSection("ESP")
 
 local WallHackEnabled = false
 local ESPColor = Color3.fromRGB(255, 0, 0)
@@ -192,7 +192,7 @@ local function RemoveESP()
 end
 
 local WallHackToggle = MainTab:CreateToggle({
-   Name = "Enable WallHack (ESP)",
+   Name = "ESP",
    CurrentValue = false,
    Flag = "WallHackToggle",
    Callback = function(Value)
@@ -245,7 +245,7 @@ SettingsTab:CreateColorPicker({
 })
 
 SettingsTab:CreateColorPicker({
-   Name = "ESP Highlight Color",
+   Name = "ESP Color",
    Color = ESPColor,
    Flag = "ESPColor",
    Callback = function(Color)
