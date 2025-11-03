@@ -32,7 +32,7 @@ GeneralTab:CreateButton({
 GeneralTab:CreateButton({
     Name = "Build a boat for a Treasure (beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/AutoSlap.lua",true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/babft.lua",true))()
     end,
 })
 
