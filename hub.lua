@@ -30,6 +30,13 @@ GeneralTab:CreateButton({
 })
 
 GeneralTab:CreateButton({
+    Name = "Build a boat for a Treasure (beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/AutoSlap.lua",true))()
+    end,
+})
+
+GeneralTab:CreateButton({
     Name = "Unvisible",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/Unvisible/refs/heads/main/UnvisibleRework.lua",true))()
