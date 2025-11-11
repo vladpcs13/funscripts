@@ -37,6 +37,13 @@ GeneralTab:CreateButton({
 })
 
 GeneralTab:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua'))()
+    end,
+})
+
+GeneralTab:CreateButton({
     Name = "Unvisible",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/Unvisible/refs/heads/main/UnvisibleRework.lua",true))()
