@@ -1,4 +1,4 @@
-local DilLib = loadstring(game:HttpGet('ССЫЛКА_НА_ВАШ_DILUI.LUA'))()
+local DilLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/DilUI.lua'))()
 
 local Window = DilLib:MakeWindow({
     Name = "vladpcs13's home",
