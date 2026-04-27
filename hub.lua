@@ -1,77 +1,64 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local DilLib = loadstring(game:HttpGet('ССЫЛКА_НА_ВАШ_DILUI.LUA'))()
 
-local Window = Rayfield:CreateWindow({
+local Window = DilLib:MakeWindow({
     Name = "vladpcs13's home",
-    LoadingTitle = "vladpcs13's home",
-    LoadingSubtitle = "by vladpcs13",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "vladpcs13",
-        FileName = "config"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false
+    ConfigFolder = "vladpcs13",
+    SaveConfig = true,
+    KeyToOpenWindow = "K",
+    IntroEnabled = true,
+    IntroText = "vladpcs13's home",
+    ShowIcon = false
 })
 
-local GeneralTab = Window:CreateTab("General", 4483345998)
-local AboutTab = Window:CreateTab("About", 4483345998)
+local GeneralTab = Window:MakeTab({
+    Name = "General",
+    Icon = "rbxassetid://4483345998"
+})
 
-GeneralTab:CreateSection("Scripts")
+local AboutTab = Window:MakeTab({
+    Name = "About",
+    Icon = "rbxassetid://4483345998"
+})
 
-GeneralTab:CreateButton({
+GeneralTab:AddLabel("Scripts")
+
+GeneralTab:AddButton({
     Name = "Slap Battles",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/AutoSlap.lua",true))()
-    end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/AutoSlap.lua", true))()
+    end
 })
 
-GeneralTab:CreateButton({
+GeneralTab:AddButton({
     Name = "Build a boat for a Treasure (beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/babft.lua",true))()
-    end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/babft.lua", true))()
+    end
 })
 
-GeneralTab:CreateButton({
+GeneralTab:AddButton({
     Name = "Infinite Yield",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua'))()
-    end,
+    end
 })
 
-GeneralTab:CreateButton({
+GeneralTab:AddButton({
     Name = "Unvisible",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/Unvisible/refs/heads/main/UnvisibleRework.lua",true))()
-    end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/Unvisible/refs/heads/main/UnvisibleRework.lua", true))()
+    end
 })
 
-GeneralTab:CreateButton({
+GeneralTab:AddButton({
     Name = "SkillHelper",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/SkillHelper.lua",true))()
-    end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/SkillHelper.lua", true))()
+    end
 })
 
-AboutTab:CreateSection("About vladpcs13")
+AboutTab:AddLabel("About vladpcs13")
 
-AboutTab:CreateParagraph({
-    Title = "vladpcs13",
-    Content = "vladpcs13 its fun roblox developer and script creator. This hub contains various useful scripts for different games."
-})
+AboutTab:AddParagraph("vladpcs13", "vladpcs13 its fun roblox developer and dalbaeb creator. This hub contains various useful scripts for different games.")
 
-AboutTab:CreateParagraph({
-    Title = "Scripts",
-    Content = "Available scripts: Slap Battles, Unvisible, SkillHelper and more to come!"
-})
-
-AboutTab:CreateParagraph({
-    Title = "Updates",
-    Content = "Regular updates and new scripts will be added to this hub. Stay tuned!"
-})
-
-Rayfield:LoadConfiguration()
+DilLib:Init()
