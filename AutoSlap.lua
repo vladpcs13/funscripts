@@ -1,166 +1,241 @@
+local DilLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/vladpcs13/funscripts/refs/heads/main/DilUI.lua'))()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({Name = "Slap Battles | Auto Slap", LoadingTitle = "Slap Battles | Auto Slap", LoadingSubtitle = "by vladpcs13"})
-local MainTab = Window:CreateTab("Main")
-local MiscTab = Window:CreateTab("Misc")
+
+local antiVoidEnabled = false
+local lastSafeCFrame = nil
+local recovering = false
+
+local maxControlVelocity = 85
 local autoActivateEnabled = true
 local autoWalkEnabled = false
-local connection
-local function getChar()
-return player.Character or player.CharacterAdded:Wait()
+local autoTeleportEnabled = false
+local rainbowMode = false
+local espEnabled = true
+local customColor = Color3.fromRGB(255, 0, 50)
+local currentTarget = nil
+local teleportPoint = Vector3.new(-1208, 328, 3)
+
+
+local highlight = Instance.new("Highlight")
+highlight.Name = "DIL.SLAP"
+highlight.FillTransparency = 0.5
+highlight.OutlineTransparency = 0
+highlight.Parent = game:GetService("CoreGui")
+
+local function getChar(plr) return plr and plr.Character end
+local function getRoot(plr) 
+    local char = getChar(plr or player)
+    return char and char:FindFirstChild("HumanoidRootPart") 
 end
-local function getRoot()
-local char = getChar()
-if not char then return end
-return char:FindFirstChild("HumanoidRootPart")
+local function getHum(plr)
+    local char = getChar(plr or player)
+    return char and char:FindFirstChildOfClass("Humanoid")
 end
-local function getHumanoid()
-local char = getChar()
-if not char then return end
-return char:FindFirstChildOfClass("Humanoid")
-end
+
 local function getTool()
-local char = getChar()
-if not char then return end
-local bp = player:FindFirstChild("Backpack")
-if not bp then return end
-for _, t in char:GetChildren() do
-if t:IsA("Tool") and t:FindFirstChild("Handle") then
-return t
+    local char = getChar(player)
+    if not char then return end
+    return char:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
 end
+
+
+local function getBestTarget()
+    local myRoot = getRoot()
+    if not myRoot then return nil end
+    
+    local nearestDist = math.huge
+    local target = nil
+    
+    for _, p in pairs(Players:GetPlayers()) do
+        if p == player then continue end
+        local char = p.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        
+        if root and hum and hum.Health > 0 and root.Position.Y > -20 then
+            local dist = (myRoot.Position - root.Position).Magnitude
+            if dist < nearestDist then
+                nearestDist = dist
+                target = p
+            end
+        end
+    end
+    return target
 end
-for _, t in bp:GetChildren() do
-if t:IsA("Tool") and t:FindFirstChild("Handle") then
-return t
-end
-end
-end
-local function equipTool(tool)
-if tool and tool.Parent == player.Backpack then
-local char = getChar()
-if char then
-tool.Parent = char
-repeat task.wait() until tool.Parent == char or not tool.Parent
-end
-end
-end
-local function start()
-if connection then return end
-connection = RunService.Heartbeat:Connect(function()
-local root = getRoot()
-if not root then return end
-local char = getChar()
-local humanoid = getHumanoid()
-if not humanoid then return end
-local tool = getTool()
-if autoActivateEnabled then
-if tool and tool.Parent == player.Backpack then
-equipTool(tool)
-if tool.Parent ~= char then return end
-end
-if tool and tool.Parent ~= char then return end
-end
-local nearestDist = math.huge
-local nearestPos = nil
-for _, p in Players:GetPlayers() do
-if p == player then continue end
-local oc = p.Character
-if not oc then continue end
-local orp = oc:FindFirstChild("HumanoidRootPart")
-if not orp then continue end
-local dist = (root.Position - orp.Position).Magnitude
-if dist < nearestDist then
-nearestDist = dist
-nearestPos = orp.Position
-end
-if autoActivateEnabled and tool and dist <= 5 then
-tool:Activate()
-end
-end
-if autoWalkEnabled and nearestPos then
-humanoid:MoveTo(nearestPos)
-end
+
+RunService.RenderStepped:Connect(function()
+    if rainbowMode then
+        customColor = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+    end
+    
+    if espEnabled and currentTarget and currentTarget.Character then
+        highlight.Adornee = currentTarget.Character
+        highlight.FillColor = customColor
+        highlight.OutlineColor = Color3.new(1, 1, 1)
+        highlight.Enabled = true
+    else
+        highlight.Enabled = false
+    end
 end)
-end
-local function stop()
-if connection then
-connection:Disconnect()
-connection = nil
-end
-end
-local function manageLoop()
-if autoActivateEnabled or autoWalkEnabled then
-start()
-else
-stop()
-end
-end
-MainTab:CreateToggle({
-Name = "Enable Auto Slap",
-CurrentValue = true,
-Callback = function(v)
-autoActivateEnabled = v
-manageLoop()
-end
-})
-MainTab:CreateToggle({
-Name = "Enable Auto Walk",
-CurrentValue = false,
-Callback = function(v)
-autoWalkEnabled = v
-manageLoop()
-local root = getRoot()
-local humanoid = getHumanoid()
-if not v and root and humanoid then
-humanoid:MoveTo(root.Position)
-end
-end
-})
-MiscTab:CreateButton({
-Name = "Load Unvisible (its may unload this script)",
-Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/vladpcs13/Unvisible/refs/heads/main/UnvisibleRework.lua",true))()
-end
-})
-MiscTab:CreateKeybind({
-Name = "Auto Slap Bind",
-CurrentKeybind = "Z",
-HoldToToggle = false,
-Callback = function(key)
-autoActivateEnabled = not autoActivateEnabled
-manageLoop()
-end
-})
-MiscTab:CreateKeybind({
-Name = "Auto Walk Bind",
-CurrentKeybind = "X",
-HoldToToggle = false,
-Callback = function(key)
-autoWalkEnabled = not autoWalkEnabled
-manageLoop()
-local root = getRoot()
-local humanoid = getHumanoid()
-if not autoWalkEnabled and root and humanoid then
-humanoid:MoveTo(root.Position)
-end
-end
-})
-MiscTab:CreateButton({
-Name = "Unload Script",
-Callback = function()
-stop()
-Rayfield:Destroy()
-end
-})
-player.CharacterAdded:Connect(function()
-task.wait(1)
-manageLoop()
-if Rayfield and Rayfield.Parent ~= playerGui then
-Rayfield.Parent = playerGui
-end
+
+task.spawn(function()
+    while task.wait() do
+        local myRoot = getRoot()
+        local myHum = getHum()
+        if not myRoot or not myHum then continue end
+        
+        currentTarget = getBestTarget()
+        
+        if currentTarget then
+            local tRoot = getRoot(currentTarget)
+            local tool = getTool()
+            
+            if tRoot then
+                local dist = (myRoot.Position - tRoot.Position).Magnitude
+                
+                if autoActivateEnabled and tool then
+                    if tool.Parent ~= player.Character then
+                        tool.Parent = player.Character
+                    end
+                    if dist < 20 then
+                        tool:Activate()
+                    end
+                end
+                
+
+                if autoWalkEnabled then
+                    myHum:MoveTo(tRoot.Position)
+                    myRoot.CFrame = CFrame.new(myRoot.Position, Vector3.new(tRoot.Position.X, myRoot.Position.Y, tRoot.Position.Z))
+                end
+            end
+        end
+    end
 end)
-task.wait(1)
-manageLoop()
+
+
+player.CharacterAdded:Connect(function(char)
+    if autoTeleportEnabled then
+        task.wait(2)
+        local hrp = char:WaitForChild("HumanoidRootPart", 5)
+        if hrp then
+            hrp.CFrame = CFrame.new(teleportPoint)
+        end
+    end
+end)
+
+
+local Window = DilLib:MakeWindow({
+    Name = "DIL.SLAP",
+    ConfigFolder = "dilslap",
+    SaveConfig = true,
+    KeyToOpenWindow = "M"
+})
+
+local MainTab = Window:MakeTab({Name = "Main", Icon = "zap"})
+local VisTab = Window:MakeTab({Name = "Visuals", Icon = "eye"})
+
+local MainSection = MainTab:AddSection({Name = "Rage Settings"})
+
+MainSection:AddToggle({
+    Name = "Авто слап",
+    Default = true,
+    Callback = function(v) 
+        autoActivateEnabled = v 
+    end
+})
+
+MainSection:AddToggle({
+    Name = "Авто ходьба",
+    Default = false,
+    Callback = function(v) 
+        autoWalkEnabled = v 
+        if not v then
+            local hrp = getRoot()
+            local hum = getHum()
+            if hrp and hum then hum:MoveTo(hrp.Position) end
+        end
+    end
+})
+task.spawn(function()
+    while task.wait(0.05) do
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        
+        if root and hum and hum.Health > 0 then
+            local isOnGround = hum.FloorMaterial ~= Enum.Material.Air
+            local velocity = root.Velocity.Magnitude
+            
+            if isOnGround and not hum.Sit and velocity < 40 then
+                lastSafeCFrame = root.CFrame
+            end
+
+            if antiVoidEnabled and not recovering then
+                local lostControl = false
+                
+
+                if velocity > maxControlVelocity then lostControl = true end
+                
+
+                if root.Position.Y < 15 then lostControl = true end
+                
+
+                if hum.Sit and root.Position.Y < 25 then lostControl = true end
+
+                if lostControl and lastSafeCFrame then
+                    recovering = true
+                    
+
+                    root.Velocity = Vector3.new(0, 0, 0)
+                    root.RotVelocity = Vector3.new(0, 0, 0)
+                    root.CFrame = lastSafeCFrame
+                    
+
+                    hum.Sit = false
+                    hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    task.wait(0.3) 
+                    recovering = false
+                end
+            end
+        end
+    end
+end)
+MainSection:AddToggle({
+    Name = "Авто тп на арену после смерти",
+    Default = false,
+    Callback = function(v) autoTeleportEnabled = v end
+})
+
+local VisSection = VisTab:AddSection({Name = "Target ESP"})
+
+VisSection:AddToggle({
+    Name = "Включить ЕСП у врага",
+    Default = true,
+    Callback = function(v) espEnabled = v end
+})
+
+VisSection:AddToggle({
+    Name = "Радужный режим",
+    Default = false,
+    Callback = function(v) rainbowMode = v end
+})
+
+VisSection:AddColorpicker({
+    Name = "Цвет",
+    Default = Color3.fromRGB(255, 0, 50),
+    Callback = function(color) customColor = color end
+})
+MainSection:AddToggle({
+    Name = "Анти отдача",
+    Default = false,
+    Callback = function(v)
+        antiVoidEnabled = v
+        if v then
+        end
+    end
+})
+DilLib:Init()
