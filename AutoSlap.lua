@@ -170,31 +170,39 @@ task.spawn(function()
             local isOnGround = hum.FloorMaterial ~= Enum.Material.Air
             local velocity = root.Velocity.Magnitude
             
-            if isOnGround and not hum.Sit and velocity < 40 then
+            -- Проверяем, идет ли игрок сам (MoveDirection > 0 значит зажаты W,A,S,D или джойстик)
+            local isMovingReady = hum.MoveDirection.Magnitude > 0
+
+            -- Сохраняем безопасную позицию, только если мы на земле и не летим с бешеной скоростью от удара
+            if isOnGround and not hum.Sit and velocity < (hum.WalkSpeed + 10) then
                 lastSafeCFrame = root.CFrame
             end
 
             if antiVoidEnabled and not recovering then
                 local lostControl = false
                 
-
-                if velocity > maxControlVelocity then lostControl = true end
+                -- Условие 1: Скорость огромная И игрок НЕ идет сам (значит его ударили)
+                if velocity > maxControlVelocity and not isMovingReady then 
+                    lostControl = true 
+                end
                 
-
-                if root.Position.Y < 15 then lostControl = true end
+                -- Условие 2: Упал слишком низко
+                if root.Position.Y < 15 then 
+                    lostControl = true 
+                end
                 
-
-                if hum.Sit and root.Position.Y < 25 then lostControl = true end
+                -- Условие 3: Сидит (в нокауте) и падает ниже платформы
+                if hum.Sit and root.Position.Y < 25 then 
+                    lostControl = true 
+                end
 
                 if lostControl and lastSafeCFrame then
                     recovering = true
                     
-
                     root.Velocity = Vector3.new(0, 0, 0)
                     root.RotVelocity = Vector3.new(0, 0, 0)
                     root.CFrame = lastSafeCFrame
                     
-
                     hum.Sit = false
                     hum:ChangeState(Enum.HumanoidStateType.GettingUp)
                     task.wait(0.3) 
@@ -238,4 +246,15 @@ MainSection:AddToggle({
         end
     end
 })
+MainSection:AddSlider({
+    Name = "Скорость бега",
+    Min = 16,
+    Max = 150,
+    Default = 16,
+    Callback = function(v)
+        local hum = getHum()
+        if hum then hum.WalkSpeed = v end
+    end
+})
+
 DilLib:Init()
