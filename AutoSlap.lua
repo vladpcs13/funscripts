@@ -5,6 +5,10 @@ local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 
+local ignoreFriendsEnabled = false
+local desiredWalkSpeed = 16
+local friendList = {}
+
 local antiVoidEnabled = false
 local lastSafeCFrame = nil
 local recovering = false
@@ -19,12 +23,24 @@ local customColor = Color3.fromRGB(255, 0, 50)
 local currentTarget = nil
 local teleportPoint = Vector3.new(-1208, 328, 3)
 
-
 local highlight = Instance.new("Highlight")
 highlight.Name = "DIL.SLAP"
 highlight.FillTransparency = 0.5
 highlight.OutlineTransparency = 0
 highlight.Parent = game:GetService("CoreGui")
+task.spawn(function()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player then
+            pcall(function() if player:IsFriendsWith(p.UserId) then friendList[p] = true end end)
+        end
+    end
+    Players.PlayerAdded:Connect(function(p)
+        pcall(function() if player:IsFriendsWith(p.UserId) then friendList[p] = true end end)
+    end)
+    Players.PlayerRemoving:Connect(function(p)
+        friendList[p] = nil
+    end)
+end)
 
 local function getChar(plr) return plr and plr.Character end
 local function getRoot(plr) 
@@ -42,7 +58,6 @@ local function getTool()
     return char:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
 end
 
-
 local function getBestTarget()
     local myRoot = getRoot()
     if not myRoot then return nil end
@@ -52,6 +67,8 @@ local function getBestTarget()
     
     for _, p in pairs(Players:GetPlayers()) do
         if p == player then continue end
+        if ignoreFriendsEnabled and friendList[p] then continue end 
+        
         local char = p.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -106,7 +123,6 @@ task.spawn(function()
                     end
                 end
                 
-
                 if autoWalkEnabled then
                     myHum:MoveTo(tRoot.Position)
                     myRoot.CFrame = CFrame.new(myRoot.Position, Vector3.new(tRoot.Position.X, myRoot.Position.Y, tRoot.Position.Z))
@@ -160,6 +176,7 @@ MainSection:AddToggle({
         end
     end
 })
+
 task.spawn(function()
     while task.wait(0.05) do
         local char = player.Character
@@ -167,13 +184,13 @@ task.spawn(function()
         local hum = char and char:FindFirstChildOfClass("Humanoid")
         
         if root and hum and hum.Health > 0 then
+            hum.WalkSpeed = desiredWalkSpeed
+
             local isOnGround = hum.FloorMaterial ~= Enum.Material.Air
             local velocity = root.Velocity.Magnitude
             
-            -- Проверяем, идет ли игрок сам (MoveDirection > 0 значит зажаты W,A,S,D или джойстик)
             local isMovingReady = hum.MoveDirection.Magnitude > 0
 
-            -- Сохраняем безопасную позицию, только если мы на земле и не летим с бешеной скоростью от удара
             if isOnGround and not hum.Sit and velocity < (hum.WalkSpeed + 10) then
                 lastSafeCFrame = root.CFrame
             end
@@ -181,17 +198,14 @@ task.spawn(function()
             if antiVoidEnabled and not recovering then
                 local lostControl = false
                 
-                -- Условие 1: Скорость огромная И игрок НЕ идет сам (значит его ударили)
                 if velocity > maxControlVelocity and not isMovingReady then 
                     lostControl = true 
                 end
                 
-                -- Условие 2: Упал слишком низко
                 if root.Position.Y < 15 then 
                     lostControl = true 
                 end
                 
-                -- Условие 3: Сидит (в нокауте) и падает ниже платформы
                 if hum.Sit and root.Position.Y < 25 then 
                     lostControl = true 
                 end
@@ -212,11 +226,39 @@ task.spawn(function()
         end
     end
 end)
+
 MainSection:AddToggle({
     Name = "Авто тп на арену после смерти",
     Default = false,
     Callback = function(v) autoTeleportEnabled = v end
 })
+
+MainSection:AddToggle({
+    Name = "Не трогать друзей",
+    Default = false,
+    Callback = function(v)
+        ignoreFriendsEnabled = v
+    end
+})
+
+MainSection:AddToggle({
+    Name = "Анти отдача",
+    Default = false,
+    Callback = function(v)
+        antiVoidEnabled = v
+    end
+})
+
+MainSection:AddSlider({
+    Name = "Скорость бега",
+    Min = 16,
+    Max = 150,
+    Default = 16,
+    Callback = function(v)
+        desiredWalkSpeed = v
+    end
+})
+
 
 local VisSection = VisTab:AddSection({Name = "Target ESP"})
 
@@ -236,25 +278,6 @@ VisSection:AddColorpicker({
     Name = "Цвет",
     Default = Color3.fromRGB(255, 0, 50),
     Callback = function(color) customColor = color end
-})
-MainSection:AddToggle({
-    Name = "Анти отдача",
-    Default = false,
-    Callback = function(v)
-        antiVoidEnabled = v
-        if v then
-        end
-    end
-})
-MainSection:AddSlider({
-    Name = "Скорость бега",
-    Min = 16,
-    Max = 150,
-    Default = 16,
-    Callback = function(v)
-        local hum = getHum()
-        if hum then hum.WalkSpeed = v end
-    end
 })
 
 DilLib:Init()
